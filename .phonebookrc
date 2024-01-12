@@ -1,0 +1,6 @@
+host=localhost
+port=5432
+sslmode=disable
+user=alexandr_burov
+dbname=postgres
+pass=

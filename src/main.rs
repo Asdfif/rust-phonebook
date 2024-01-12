@@ -1,7 +1,11 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 extern crate postgres;
-use postgres::{Connection, SslMode};
+extern crate ini;
+
+use ini::Ini;
+use postgres::{Connection, SslMode, ConnectParams, ConnectTarget, UserInfo};
+use std::str::FromStr;
 
 struct Person {
     id: i32,
@@ -9,11 +13,44 @@ struct Person {
     data: Option<Vec<u8>>
 }
 
+fn params() -> (ConnectParams, SslMode) {
+    let conf = Ini::load_from_file(".phonebookrc").unwrap();
+    let general = conf.general_section();
+
+    let host = general.get("host").unwrap();
+    let port = general.get("port").unwrap();
+    let sslmode = general.get("sslmode").unwrap();
+    let dbname = general.get("dbname").unwrap();
+    let user = general.get("user").unwrap();
+    let pass = general.get("pass").unwrap();
+
+
+    let sslmode_ = match sslmode {
+        "disable" => SslMode::None,
+        "enable" => unimplemented!(),
+        _ => panic!("Wrong sslmode"),
+    };
+
+    let params = ConnectParams {
+        target: ConnectTarget::Tcp(host.to_owned()),
+        port: Some(FromStr::from_str(port).unwrap()),
+        user: Some(UserInfo {
+            user: user.to_owned(),
+            password: Some(pass.to_owned()),
+        }),
+        database: Some(dbname.to_owned()),
+        options: vec![],
+    };
+    (params, sslmode_)
+}
+
 fn main() {
+    let (params, sslmode) = params();
+
     let conn =
         Connection::connect(
-            "postgres://alexandr_burov@localhost",
-            &SslMode::None)
+            params,
+            &sslmode)
         .unwrap();
 
     conn.execute(
