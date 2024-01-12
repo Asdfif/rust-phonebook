@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 postgres = "0.9"
+rust-ini = "0.19"
