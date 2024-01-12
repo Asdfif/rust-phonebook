@@ -5,7 +5,6 @@ extern crate ini;
 
 use ini::Ini;
 use postgres::{Connection, SslMode, ConnectParams, ConnectTarget, UserInfo};
-use std::str::FromStr;
 
 struct Person {
     id: i32,
@@ -33,7 +32,7 @@ fn params() -> (ConnectParams, SslMode) {
 
     let params = ConnectParams {
         target: ConnectTarget::Tcp(host.to_owned()),
-        port: Some(FromStr::from_str(port).unwrap()),
+        port: Some(port.parse().unwrap()),
         user: Some(UserInfo {
             user: user.to_owned(),
             password: Some(pass.to_owned()),
